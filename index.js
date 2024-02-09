@@ -1,6 +1,6 @@
 // import { render, createElement } from "./React.js"
-import ReatcDOM from "./core/ReactDom.js"
-import React from "./core/React.js"
+import ReatcDOM from "./react/core/ReactDom.js"
+import React from "./react/core/React.js"
 
 // const dom = createElement("div")
 // dom.id = "app"
