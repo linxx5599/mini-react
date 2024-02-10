@@ -29,16 +29,73 @@ function createElement(type, props, ...children) {
   }
 }
 
+let nextFiber = null
+
 function render(el, container) {
-  const dom = el.type === TEXT_ELEMENT ? document.createTextNode("") : document.createElement(el.type)
-  const { children, ...props } = el.props;
+  nextFiber = {
+    dom: container,
+    props: {
+      children: [el]
+    }
+  }
+}
+
+function workLoop(deadLine) {
+  let shouldYield = false
+  while (!shouldYield && nextFiber) {
+    nextFiber = performFiber(nextFiber)
+    shouldYield = deadLine.timeRemaining() < 1
+  }
+  requestIdleCallback(workLoop)
+}
+requestIdleCallback(workLoop)
+
+function createDom(type) {
+  return type === TEXT_ELEMENT ?
+    document.createTextNode("") :
+    document.createElement(type)
+}
+
+function updateProps(dom, props) {
   Object.keys(props).forEach(key => {
     dom[key] = props[key]
   })
-  children.forEach(child => {
-    render(child, dom)
+}
+
+let prevFiber = null
+function performFiber(fiber) {
+  const { children, ...props } = fiber.props;
+  if (!fiber.dom) {
+    //create dom 
+    const dom = (fiber.dom = createDom(fiber.type))
+    updateProps(dom, props)
+    fiber.parent.dom.append(dom)
+  }
+
+  //转换链表 设置指针
+  children.forEach((child, index) => {
+    const newFiber = {
+      type: child.type,
+      props: child.props,
+      child: null,
+      parent: fiber,
+      sibling: null,
+      dom: null,
+    }
+    if (index === 0) {
+      fiber.child = newFiber
+    } else {
+      prevFiber.sibling = newFiber
+    }
+    prevFiber = newFiber
   })
-  container.append(dom)
+  if (fiber.child) {
+    return fiber.child
+  }
+  if (fiber.sibling) {
+    return fiber.sibling
+  }
+  return fiber.parent?.sibling
 }
 
 const React = {
