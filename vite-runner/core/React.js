@@ -63,17 +63,9 @@ function updateProps(dom, props) {
 }
 
 let prevFiber = null
-function performFiber(fiber) {
-  const { children, ...props } = fiber.props;
-  if (!fiber.dom) {
-    //create dom 
-    const dom = (fiber.dom = createDom(fiber.type))
-    updateProps(dom, props)
-    fiber.parent.dom.append(dom)
-  }
-
+function initFiber(fiber) {
   //转换链表 设置指针
-  children.forEach((child, index) => {
+  fiber.props.children.forEach((child, index) => {
     const newFiber = {
       type: child.type,
       props: child.props,
@@ -89,6 +81,20 @@ function performFiber(fiber) {
     }
     prevFiber = newFiber
   })
+}
+
+function performFiber(fiber) {
+  const { children, ...props } = fiber.props;
+  if (!fiber.dom) {
+    //create dom 
+    const dom = (fiber.dom = createDom(fiber.type))
+    updateProps(dom, props)
+    fiber.parent.dom.append(dom)
+  }
+
+  //转换链表 设置指针
+  initFiber(fiber)
+  
   if (fiber.child) {
     return fiber.child
   }
