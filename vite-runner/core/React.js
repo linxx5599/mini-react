@@ -64,7 +64,6 @@ function updateProps(dom, props) {
 
 let prevFiber = null
 function initFiber(fiber) {
-  //转换链表 设置指针
   fiber.props.children.forEach((child, index) => {
     const newFiber = {
       type: child.type,
@@ -92,9 +91,8 @@ function performFiber(fiber) {
     fiber.parent.dom.append(dom)
   }
 
-  //转换链表 设置指针
   initFiber(fiber)
-  
+
   if (fiber.child) {
     return fiber.child
   }
